@@ -176,6 +176,7 @@ __HTML__;
             'cb' => '&lt;input type="checkbox" />',
             'name' => __('Name'),
             'phone' => __('Phone'),
+            'email' => __('Email'),
             'id' => __('Raffle #'),
         ];
     }
@@ -193,6 +194,8 @@ __HTML__;
             case 'id':
                 echo $id;
                 break;
+            case 'email':
+                echo get_post_meta($id, 'wp_raffle_email', true);
             default:
                 break;
         }
