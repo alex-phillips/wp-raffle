@@ -1,16 +1,16 @@
 <?php
 /*
-Plugin Name: Wordpress Simple entry Plugin
+Plugin Name: Wordpress Simple Raffle Plugin
 Plugin URI:  https://github.com/simonrcodrington/Introduction-to-WordPress-Plugins---entry-Plugin
-Description: Creates an interfaces to manage store / business entries on your website. Useful for showing entry based information quickly. Includes both a widget and shortcode for ease of use.
+Description: Creates a post type of 'raffle' where user's can submit their information to recieve a unique ticket number
 Version:     1.0.0
-Author:      Simon Codrington
-Author URI:  http://www.simoncodrington.com.au
+Author:      Alex Phillips
+Author URI:  http://www.wootables.com
 License:     GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
-class wp_simple_entry
+class wp_simple_raffle
 {
 
     //properties
@@ -21,13 +21,13 @@ class wp_simple_entry
     {
         add_action('init', array($this, 'register_entry_content_type')); //register entry content type
         add_action('add_meta_boxes', array($this, 'add_entry_meta_boxes')); //add meta boxes
-        add_action('save_post_wp_raffles', array($this, 'save_entry')); //save entry
+        add_action('save_post_wp_raffle_entry', array($this, 'save_entry')); //save entry
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts_and_styles')); //admin scripts and styles
         add_action('wp_enqueue_scripts', array($this, 'enqueue_public_scripts_and_styles')); //public scripts and styles
 
         // Add custom columns for viewing
-        add_action('manage_edit-wp_raffles_columns', [$this, 'entry_columns']);
-        add_action('manage_wp_raffles_posts_custom_column', [$this, 'handle_custom_columns'], 10, 2);
+        add_action('manage_edit-wp_raffle_entry_columns', [$this, 'entry_columns']);
+        add_action('manage_wp_raffle_entry_posts_custom_column', [$this, 'handle_custom_columns'], 10, 2);
 
         // Add export button and functionality
         add_action('restrict_manage_posts', [$this, 'add_export_button']);
@@ -46,7 +46,7 @@ class wp_simple_entry
     {
         $screen = get_current_screen();
 
-        if ($this->check_user_role('administrator') && $post_type === 'wp_raffles' && isset($screen->parent_file) && preg_match('#edit\.php#', $screen->parent_file)) {
+        if ($this->check_user_role('administrator') && $post_type === 'wp_raffle_entry' && isset($screen->parent_file) && preg_match('#edit\.php#', $screen->parent_file)) {
             echo <<<__HTML__
             <input type="submit" name="export_all_raffle_entries" id="export_all_raffle_entries" class="button button-primary" value="Export All Posts">
             <script type="text/javascript">
@@ -67,7 +67,7 @@ __HTML__;
 
             // Check to make sure phone number and email are unique
             $query = new WP_Query([
-                'post_type' => 'wp_raffles',
+                'post_type' => 'wp_raffle_entry',
                 'meta_query' => [
                     [
                         'key' => 'wp_raffle_phone',
@@ -81,7 +81,7 @@ __HTML__;
             }
 
             $query = new WP_Query([
-                'post_type' => 'wp_raffles',
+                'post_type' => 'wp_raffle_entry',
                 'meta_query' => [
                     [
                         'key' => 'wp_raffle_email',
@@ -95,7 +95,7 @@ __HTML__;
             }
 
             $id = wp_insert_post([
-                'post_type' => 'wp_raffles',
+                'post_type' => 'wp_raffle_entry',
                 'post_author' => 1,
                 'post_status' => 'private',
             ]);
@@ -124,7 +124,7 @@ __HTML__;
         if (isset($_GET['export_all_raffle_entries'])) {
             if ($this->check_user_role('administrator')) {
                 $arg = array(
-                    'post_type' => 'wp_raffles',
+                    'post_type' => 'wp_raffle_entry',
                     'posts_per_page' => -1,
                 );
 
@@ -239,7 +239,7 @@ __HTML__;
             'can_export' => true,
         );
         //register post type
-        register_post_type('wp_raffles', $args);
+        register_post_type('wp_raffle_entry', $args);
     }
 
     //adding meta boxes for the entry content type*/
@@ -249,7 +249,7 @@ __HTML__;
             'wp_raffle_meta_box', //id
             'Entry Information', //name
             array($this, 'entry_meta_box_display'), //display function
-            'wp_raffles', //post type
+            'wp_raffle_entry', //post type
             'normal', //entry
             'default' //priority
         );
@@ -318,7 +318,7 @@ __HTML__;
             global $post, $post_type;
 
             //display meta only on our entries (and if its a single entry)
-            if ($post_type == 'wp_raffles' && is_singular('wp_raffles')) {
+            if ($post_type == 'wp_raffle_entry' && is_singular('wp_raffle_entry')) {
 
                 //collect variables
                 $wp_raffle_id = $post->ID;
@@ -511,7 +511,7 @@ __HTML__;
             wp_enqueue_style('wp_raffle_public_styles', plugin_dir_url(__FILE__) . '/css/wp_raffle_public_styles.css');
         }
     }
-    $wp_simple_entries = new wp_simple_entry;
+    $wp_simple_entries = new wp_simple_raffle;
 
     //include shortcodes
     include(plugin_dir_path(__FILE__) . 'inc/wp_raffle_shortcode.php');
